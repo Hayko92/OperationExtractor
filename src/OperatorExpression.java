@@ -1,4 +1,4 @@
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class OperatorExpression implements Expression {
@@ -17,6 +17,12 @@ public class OperatorExpression implements Expression {
         left = new ValueExpression(0.0);
         right = new ValueExpression(0.0);
         this.operator = Operator.PLUS;
+    }
+
+    public OperatorExpression(Operator operator) {
+        left = new ValueExpression(0.0);
+        right = new ValueExpression(0.0);
+        this.operator = operator;
     }
 
     public Expression getLeft() {
@@ -45,13 +51,25 @@ public class OperatorExpression implements Expression {
 
     @Override
     public double calculate() {
+        switch (operator) {
+            case PLUS -> {
+                return left.calculate() + right.calculate();
+            }
+            case DIVIDE -> {
+                return left.calculate() / right.calculate();
+            }
+            case MULTYPLY -> {
+                return left.calculate() * right.calculate();
+            }
+        }
         return left.calculate() + right.calculate();
     }
 
     public void createExpressionHierarchy(String ex) {
         StringBuilder sb = new StringBuilder();
-
+        ex = calcMultyplyAndDivide(ex);
         try {
+            //adding valueExpression to left side
             double value = Double.parseDouble(ex);
             this.left = new ValueExpression(value);
         } catch (NumberFormatException e) {
@@ -71,9 +89,39 @@ public class OperatorExpression implements Expression {
                     right.createExpressionHierarchy(rightPart);
                     break;
                 }
-
             }
         }
     }
 
+    private String calcMultyplyAndDivide(String ex) {
+        double firstOperant;
+        double secondOperant;
+        int index;
+        while (ex.contains("*") || ex.contains("/")) {
+            String[] numbs = ex.split("[*,/,-,+]+");
+            List<String> operators = Arrays.asList(ex.split("[0-9,.]+"));
+            int indexOfMultyply = operators.indexOf("*") - 1;
+            int indexDivide = operators.indexOf("/") - 1;
+            if (indexDivide >= -1 && indexOfMultyply >= -1) index = Math.min(indexDivide, indexOfMultyply);
+            else if (indexDivide == -2) index = indexOfMultyply;
+            else index = indexDivide;
+            double replace;
+            if (ex.charAt(0) == '-') {
+                firstOperant = Double.parseDouble(numbs[index - 1]);
+                secondOperant = Double.parseDouble(numbs[index]);
+
+            } else {
+                firstOperant = Double.parseDouble(numbs[index]);
+                secondOperant = Double.parseDouble(numbs[index + 1]);
+            }
+            if (index == indexDivide) {
+                replace = firstOperant / secondOperant;
+                ex = ex.replaceFirst("[0-9.]+[\\/]+[0-9,.]+", String.valueOf(replace));
+            } else {
+                replace = firstOperant * secondOperant;
+                ex = ex.replaceFirst("[0-9.]+[*]+[0-9,.]+", String.valueOf(replace));
+            }
+        }
+        return ex;
+    }
 }

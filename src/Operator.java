@@ -1,6 +1,7 @@
 public enum Operator {
-    PLUS("+"), MINUS("-");
-
-    Operator(String s) {
+    PLUS("+"), MINUS("-"),DIVIDE("/"),MULTYPLY("*");
+public String op;
+   Operator(String s) {
+        this.op = s;
     }
 }
